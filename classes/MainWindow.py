@@ -1,13 +1,24 @@
 #!/usr/bin/python3 -u
 
-from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, qApp, QAction, QSystemTrayIcon, QStyle, QMenu, \
-    QDialog, QMessageBox, QDesktopWidget, QToolTip, QPushButton, QTextEdit, QBoxLayout, QVBoxLayout, QHBoxLayout
-from PyQt5.QtCore import QSize
+    QDialog, QMessageBox, QDesktopWidget, QToolTip, QPushButton, QTextEdit, QBoxLayout, QVBoxLayout, QHBoxLayout, \
+    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from classes.LeftMenu import LeftMenu
-import os
-import sys
+from connector import Connector
+
+
+def action_decorator(method_to_decorate):
+    def action_wrapper(self):
+        self.main_window.removeItem(self.main_field)
+        self.main_field = QVBoxLayout()
+        method_to_decorate(self)
+        # self.main_field.addStretch()
+        self.main_window.addLayout(self.main_field)
+        self.main_window.setStretchFactor(self.main_field, 9)
+
+    return action_wrapper
 
 
 # Наследуемся от QMainWindow
@@ -19,6 +30,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         # Обязательно нужно вызвать метод супер класса
         QMainWindow.__init__(self)
+
+        self.connector = Connector()
 
         self.setup_app()
         self.set_main_menu()
@@ -32,19 +45,19 @@ class MainWindow(QMainWindow):
 
     # настраиваем рабочую область приложения
     def set_main_window(self):
-        main_window = QHBoxLayout()
-        main_field = QVBoxLayout()
-        left_menu = LeftMenu()
-        main_window.addLayout(left_menu)
-        main_window.addLayout(main_field)
-        main_window.setStretchFactor(left_menu, 1)
-        main_window.setStretchFactor(main_field, 9)
-        return main_window
+        self.main_window = QHBoxLayout()
+        self.main_field = QVBoxLayout()
+        self.main_widget = QFrame(self)
+        self.main_field.addWidget(self.main_widget)
+        self.left_menu = self.left_menu()
+        self.main_window.addLayout(self.left_menu)
+        self.main_window.addLayout(self.main_field)
+        self.main_window.setStretchFactor(self.left_menu, 1)
+        self.main_window.setStretchFactor(self.main_field, 9)
+        return self.main_window
 
-    def set_main_window2(self):
-        # устанавливаем грид лейаут в центральные виджет
-        self.grid_layout = QGridLayout(self)  # Создаём QGridLayout
-        # grid_layout.setSpacing(10)
+    def left_menu(self):
+        left_menu = QVBoxLayout()
         names = [
             'Адресная книга',
             'Добавить запись',
@@ -52,20 +65,89 @@ class MainWindow(QMainWindow):
             'Добавить заметку',
             'Настройки',
         ]
-        pos = 1
-        for name in names:
+        actions = [
+            self.show_addresses,
+            self.show_test,
+            self.show_test,
+            self.show_test,
+            self.show_test,
+        ]
+        for name, action in zip(names, actions):
             button = QPushButton(name)
+            button.clicked.connect(action)
             button.setStyleSheet("width: 120px; height: 40px;")
-            # button.setStyleSheet("text-align: left;")
-            self.grid_layout.addWidget(button, pos, 0)
-            pos += 1
-        main_window = QTextEdit()
-        # title = QLabel("Address book on the PyQt5", self)  # Создаём лейбл
-        # title.setAlignment(QtCore.Qt.AlignCenter)  # Устанавливаем позиционирование текста
-        # main_window.addWidget(title)  # и добавляем его в размещение
-        self.grid_layout.addWidget(main_window, 1, 1, 15, 1)
-        # self.grid_layout.addWidget(main_window, 1, 0)
-        return self.grid_layout
+            left_menu.addWidget(button)
+        left_menu.addStretch()
+        return left_menu
+
+    @action_decorator
+    def show_addresses(self):
+        addresses = self.connector.get_all('addresses')
+        self.main_widget = QScrollArea()
+        self.main_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.main_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        widget = QWidget()
+        layout = QVBoxLayout()
+        for row in addresses:
+            view = self.address_view(row)
+            layout.addWidget(view)
+        layout.addStretch()
+        widget.setLayout(layout)
+        self.main_widget.setWidget(widget)
+        self.main_widget.setWidgetResizable(False)
+        self.main_field.addWidget(self.main_widget)
+
+    @action_decorator
+    def show_test(self):
+        addresses = self.connector.get_all('addresses')
+        for row in addresses:
+            print(row)
+
+    def address_view(self, row=None):
+        # print(row)
+        formGroupBox = QGroupBox()
+        # field_second_name = QLabel('Фамилия: ' + row['first_name'])
+        # field_first_name = QLabel('Имя: ' + row['second_name'])
+        user = QGridLayout()
+        user.addWidget(QLabel('Фамилия:'), 0, 1)
+        user.addWidget(QLabel(row['second_name']), 0, 2)
+        user.addWidget(QLabel('Имя:'), 1, 1)
+        user.addWidget(QLabel(row['first_name']), 1, 2)
+        user.addWidget(QLabel('День рождения: '), 2, 1)
+        user.addWidget(QLabel(row['birthday']), 2, 2)
+        if row is not None and row['phone'] is not None:
+            count = 4
+            for number in row['phone']:
+                user.addWidget(QLabel('Телефон: '), count, 1)
+                user.addWidget(QLabel(number['phone']), count, 2)
+                user.addWidget(QLabel('Тип: '), count, 3)
+                user.addWidget(QLabel(number['type']), count, 4)
+                count += 1
+
+        # user.addWidget(field_first_name)
+        user.addWidget(QLabel('Примечание: '), count + 1, 1)
+        user.addWidget(QLabel(row['notes']), count + 1, 2, 10, 10)
+        # user.addWidget(QLabel(''), 0, 5, 1, 10)
+        formGroupBox.setLayout(user)
+        # scroll.setWidgetResizable(True)
+        # scroll.setFixedHeight(400)
+        # form = QFormLayout(self)
+        # field_second_name = QLineEdit(self)
+        # form.addRow(QLabel("Фамилия:"), field_second_name)
+        # field_first_name = QLineEdit(self)
+        # form.addRow(QLabel("Имя:"), field_first_name)
+        # field_phone = QLineEdit(self)
+        # field_phone_type = QLineEdit(self)
+        # form.addRow(QLabel("Тип:"), field_phone_type)
+        # form.addRow(QLabel("Телефон:"), field_phone)
+        # if row is not None and row['phone'] is not None:
+        #     for number in row['phone']:
+        #         form.addRow(QLabel("Тип:"), QLineEdit(self).setText(number['type']))
+        #         form.addRow(QLabel("Телефон:"), QLineEdit(self).setText(number['phone']))
+        #         print(number['phone'])
+        # formGroupBox.setLayout(form)
+        return formGroupBox
+
 
     # настраиваем окно приложения
     def setup_app(self):
@@ -76,7 +158,6 @@ class MainWindow(QMainWindow):
 
     # настраиваем трей
     def set_tray(self):
-        # сворачивание приложения в трей
         tray_icon = QSystemTrayIcon(self)
         icon = QIcon("icon.png")
         tray_icon.setIcon(icon)
