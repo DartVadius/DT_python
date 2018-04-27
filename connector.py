@@ -24,5 +24,5 @@ class Connector:
 
     @connect_decorator
     def get_all(self, table_name):
-        value = r.table(table_name).run(self.connection)
+        value = r.table(table_name).order_by('second_name').run(self.connection)
         return value

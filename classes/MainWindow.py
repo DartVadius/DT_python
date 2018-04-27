@@ -9,22 +9,26 @@ from classes.LeftMenu import LeftMenu
 from connector import Connector
 
 
+def clear_layout(layout):
+    while layout.count() > 0:
+        item = layout.takeAt(0)
+        if not item:
+            continue
+        w = item.widget()
+        if w:
+            w.deleteLater()
+
+
 def action_decorator(method_to_decorate):
     def action_wrapper(self):
-        self.main_window.removeItem(self.main_field)
-        self.main_field = QVBoxLayout()
+        clear_layout(self.main_field)
         method_to_decorate(self)
-        # self.main_field.addStretch()
-        self.main_window.addLayout(self.main_field)
-        self.main_window.setStretchFactor(self.main_field, 9)
 
     return action_wrapper
 
 
 # Наследуемся от QMainWindow
 class MainWindow(QMainWindow):
-    central_widget = None
-    grid_layout = None
 
     # Переопределяем конструктор класса
     def __init__(self):
@@ -67,7 +71,7 @@ class MainWindow(QMainWindow):
         ]
         actions = [
             self.show_addresses,
-            self.show_test,
+            self.add_address,
             self.show_test,
             self.show_test,
             self.show_test,
@@ -103,11 +107,25 @@ class MainWindow(QMainWindow):
         for row in addresses:
             print(row)
 
+    @action_decorator
+    def add_address(self):
+        pass
+
+    @action_decorator
+    def edit_address(self):
+        source = self.sender()
+        user = self.connector.get_by_id(source.table, source.id)
+        self.main_widget = QGroupBox()
+        form_layout = QFormLayout()
+        test = QTextEdit()
+        form_layout.addRow(test)
+        self.main_widget.setLayout(form_layout)
+        self.main_field.addWidget(self.main_widget)
+
+        print(user)
+
     def address_view(self, row=None):
-        # print(row)
-        formGroupBox = QGroupBox()
-        # field_second_name = QLabel('Фамилия: ' + row['first_name'])
-        # field_first_name = QLabel('Имя: ' + row['second_name'])
+        group_box = QGroupBox(self)
         user = QGridLayout()
         user.addWidget(QLabel('Фамилия:'), 0, 1)
         user.addWidget(QLabel(row['second_name']), 0, 2)
@@ -119,35 +137,22 @@ class MainWindow(QMainWindow):
             count = 4
             for number in row['phone']:
                 user.addWidget(QLabel('Телефон: '), count, 1)
-                user.addWidget(QLabel(number['phone']), count, 2)
+                phone = QLabel(number['phone'])
+                phone.setTextInteractionFlags(Qt.TextSelectableByMouse)
+                user.addWidget(phone, count, 2)
                 user.addWidget(QLabel('Тип: '), count, 3)
                 user.addWidget(QLabel(number['type']), count, 4)
                 count += 1
-
-        # user.addWidget(field_first_name)
         user.addWidget(QLabel('Примечание: '), count + 1, 1)
-        user.addWidget(QLabel(row['notes']), count + 1, 2, 10, 10)
-        # user.addWidget(QLabel(''), 0, 5, 1, 10)
-        formGroupBox.setLayout(user)
-        # scroll.setWidgetResizable(True)
-        # scroll.setFixedHeight(400)
-        # form = QFormLayout(self)
-        # field_second_name = QLineEdit(self)
-        # form.addRow(QLabel("Фамилия:"), field_second_name)
-        # field_first_name = QLineEdit(self)
-        # form.addRow(QLabel("Имя:"), field_first_name)
-        # field_phone = QLineEdit(self)
-        # field_phone_type = QLineEdit(self)
-        # form.addRow(QLabel("Тип:"), field_phone_type)
-        # form.addRow(QLabel("Телефон:"), field_phone)
-        # if row is not None and row['phone'] is not None:
-        #     for number in row['phone']:
-        #         form.addRow(QLabel("Тип:"), QLineEdit(self).setText(number['type']))
-        #         form.addRow(QLabel("Телефон:"), QLineEdit(self).setText(number['phone']))
-        #         print(number['phone'])
-        # formGroupBox.setLayout(form)
-        return formGroupBox
-
+        user.addWidget(QLabel(row['notes']), count + 1, 2, 1, 10)
+        button = QPushButton('Редактировать')
+        button.clicked.connect(self.edit_address)
+        button.setStyleSheet("width: 100px; height: 20px;")
+        button.id = row['id']
+        button.table = 'addresses'
+        user.addWidget(button, 0, 10, 2, 1)
+        group_box.setLayout(user)
+        return group_box
 
     # настраиваем окно приложения
     def setup_app(self):
@@ -161,9 +166,9 @@ class MainWindow(QMainWindow):
         tray_icon = QSystemTrayIcon(self)
         icon = QIcon("icon.png")
         tray_icon.setIcon(icon)
-        show_action = QAction("Show", self)
-        quit_action = QAction("Exit", self)
-        hide_action = QAction("Hide", self)
+        show_action = QAction("Показать", self)
+        quit_action = QAction("Выйти", self)
+        hide_action = QAction("Спрятать", self)
         show_action.triggered.connect(self.show)
         hide_action.triggered.connect(self.hide)
         quit_action.triggered.connect(self.close)
@@ -179,22 +184,22 @@ class MainWindow(QMainWindow):
     # настраиваем главное меню и тулбар
     def set_main_menu(self):
         # экшены
-        hide_action = QAction(QIcon("icon.png"), "&Hide", self)
+        hide_action = QAction(QIcon("icon.png"), "&Спрятать", self)
         hide_action.triggered.connect(self.hide)
-        exit_action = QAction("&Exit", self)  # Создаём Action с помощью которого будем выходить из приложения
+        exit_action = QAction("&Выйти", self)  # Создаём Action с помощью которого будем выходить из приложения
         exit_action.setShortcut('Ctrl+Q')  # Задаём для него хоткей
         exit_action.triggered.connect(self.close)  # Подключаем сигнал triggered к слоту quit у qApp.
-        test_action = QAction("&Test", self)
-        test_action.triggered.connect(self.test)
+        # test_action = QAction("&Test", self)
+        # test_action.triggered.connect(self.test)
 
         # панель меню
         main_menu = self.menuBar()
-        hide_menu = main_menu.addMenu('Hide')
-        file_menu = main_menu.addMenu('Exit')
-        test_menu = main_menu.addMenu('Test')
+        hide_menu = main_menu.addMenu('Спрятать')
+        file_menu = main_menu.addMenu('Выйти')
+        # test_menu = main_menu.addMenu('Test')
         hide_menu.addAction(hide_action)
         file_menu.addAction(exit_action)
-        test_menu.addAction(test_action)
+        # test_menu.addAction(test_action)
 
         # тулбар
         # toolbar = self.addToolBar('Exit')
