@@ -2,11 +2,11 @@
 
 from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, qApp, QAction, QSystemTrayIcon, QStyle, QMenu, \
     QDialog, QMessageBox, QDesktopWidget, QToolTip, QPushButton, QTextEdit, QBoxLayout, QVBoxLayout, QHBoxLayout, \
-    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea, QComboBox
-from PyQt5.QtCore import QSize, Qt
+    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea, QComboBox, QCalendarWidget, QDateEdit
+from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import QIcon, QPixmap, QFont
-from classes.LeftMenu import LeftMenu
 from connector import Connector
+from classes.AddressForm import AddressForm
 
 
 def clear_layout(layout):
@@ -114,18 +114,33 @@ class MainWindow(QMainWindow):
 
     @action_decorator
     def add_address(self):
-        pass
+        self.main_widget = QGroupBox()
+        self.form_layout = AddressForm()
+        self.main_widget.setLayout(self.form_layout.get_layout())
+        self.main_field.addWidget(self.main_widget)
+        self.main_field.addStretch()
+        button_layout = self.button_layout()
+        group_box = QGroupBox(self)
+        group_box.setLayout(button_layout)
+
+        self.main_field.addWidget(group_box)
 
     @action_decorator
     def edit_address(self):
         source = self.sender()
         user = self.connector.get_by_id(source.table, source.id)
         self.main_widget = QGroupBox()
-        form_layout = self.address_form(user)
-        self.main_widget.setLayout(form_layout)
+        self.form_layout = AddressForm(user)
+        self.main_widget.setLayout(self.form_layout.get_layout())
         self.main_field.addWidget(self.main_widget)
         self.main_field.addStretch()
+        button_layout = self.button_layout()
+        group_box = QGroupBox(self)
+        group_box.setLayout(button_layout)
 
+        self.main_field.addWidget(group_box)
+
+    def button_layout(self):
         button_layout = QGridLayout()
 
         button = QPushButton(' Телефон')
@@ -142,46 +157,24 @@ class MainWindow(QMainWindow):
 
         button_layout.addWidget(button, 1, 1, 1, 1)
         button_layout.addWidget(QLabel(), 1, 2, 1, 10)
-
-        group_box = QGroupBox(self)
-        group_box.setLayout(button_layout)
-
-        self.main_field.addWidget(group_box)
-
-    def address_form(self, user=None):
-        print(user['second_name'])
-        self.form_layout = QFormLayout()
-        second_name = QLineEdit()
-        if user is not None and user['second_name'] is not None:
-            second_name.setText(user['second_name'])
-        second_name_label = QLabel('Фамилия:')
-        first_name = QLineEdit()
-        first_name_label = QLabel('Имя:')
-        birthday = QLineEdit()
-        birthday_label = QLabel('Дата рождения:')
-        notes = QTextEdit()
-        notes_label = QLabel('Примечание:')
-        phone = QLineEdit()
-        phone_label = QLabel('Телефон')
-        phone_type = QComboBox(self)
-        phone_type.addItem('Домашний')
-        phone_type.addItem('Рабочий')
-        self.form_layout.addRow(second_name_label, second_name)
-        self.form_layout.addRow(first_name_label, first_name)
-        self.form_layout.addRow(birthday_label, birthday)
-        self.form_layout.addRow(notes_label, notes)
-        self.form_layout.addRow(phone_label)
-        self.form_layout.addRow(phone_type, phone)
-        return self.form_layout
+        return button_layout
 
     def save_user(self):
-        pass
+        print(self.form_layout.get_second_name())
+        # for phone in self.phones:
+        #     print(phone['phone'].text())
+        # self.show_addresses()
 
     def add_field(self):
         phone_type = QComboBox(self)
         phone_type.addItem('Домашний')
         phone_type.addItem('Рабочий')
-        self.form_layout.addRow(phone_type, QLineEdit())
+        phone = QLineEdit()
+        self.form_layout.phones.append({
+            'phone': phone,
+            'type': phone_type
+        })
+        self.form_layout.add_row(phone_type, phone)
 
     def address_view(self, row=None):
         group_box = QGroupBox(self)
