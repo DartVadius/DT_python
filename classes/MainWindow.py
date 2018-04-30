@@ -2,7 +2,7 @@
 
 from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, qApp, QAction, QSystemTrayIcon, QStyle, QMenu, \
     QDialog, QMessageBox, QDesktopWidget, QToolTip, QPushButton, QTextEdit, QBoxLayout, QVBoxLayout, QHBoxLayout, \
-    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea
+    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea, QComboBox
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from classes.LeftMenu import LeftMenu
@@ -29,6 +29,11 @@ def action_decorator(method_to_decorate):
 
 # Наследуемся от QMainWindow
 class MainWindow(QMainWindow):
+    main_window = None
+    main_field = None
+    main_widget = None
+    left_menu = None
+    form_layout = None
 
     # Переопределяем конструктор класса
     def __init__(self):
@@ -116,13 +121,67 @@ class MainWindow(QMainWindow):
         source = self.sender()
         user = self.connector.get_by_id(source.table, source.id)
         self.main_widget = QGroupBox()
-        form_layout = QFormLayout()
-        test = QTextEdit()
-        form_layout.addRow(test)
+        form_layout = self.address_form(user)
         self.main_widget.setLayout(form_layout)
         self.main_field.addWidget(self.main_widget)
+        self.main_field.addStretch()
 
-        print(user)
+        button_layout = QGridLayout()
+
+        button = QPushButton(' Телефон')
+        button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_ArrowUp')))
+        button.clicked.connect(self.add_field)
+        button.setStyleSheet("width: 90px; height: 20px;")
+
+        button_layout.addWidget(button, 1, 0, 1, 1)
+
+        button = QPushButton(' Сохранить')
+        button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')))
+        button.clicked.connect(self.save_user)
+        button.setStyleSheet("width: 90px; height: 20px;")
+
+        button_layout.addWidget(button, 1, 1, 1, 1)
+        button_layout.addWidget(QLabel(), 1, 2, 1, 10)
+
+        group_box = QGroupBox(self)
+        group_box.setLayout(button_layout)
+
+        self.main_field.addWidget(group_box)
+
+    def address_form(self, user=None):
+        print(user['second_name'])
+        self.form_layout = QFormLayout()
+        second_name = QLineEdit()
+        if user is not None and user['second_name'] is not None:
+            second_name.setText(user['second_name'])
+        second_name_label = QLabel('Фамилия:')
+        first_name = QLineEdit()
+        first_name_label = QLabel('Имя:')
+        birthday = QLineEdit()
+        birthday_label = QLabel('Дата рождения:')
+        notes = QTextEdit()
+        notes_label = QLabel('Примечание:')
+        phone = QLineEdit()
+        phone_label = QLabel('Телефон')
+        phone_type = QComboBox(self)
+        phone_type.addItem('Домашний')
+        phone_type.addItem('Рабочий')
+        self.form_layout.addRow(second_name_label, second_name)
+        self.form_layout.addRow(first_name_label, first_name)
+        self.form_layout.addRow(birthday_label, birthday)
+        self.form_layout.addRow(notes_label, notes)
+        self.form_layout.addRow(phone_label)
+        self.form_layout.addRow(phone_type, phone)
+        return self.form_layout
+
+    def save_user(self):
+        pass
+
+    def add_field(self):
+        phone_type = QComboBox(self)
+        phone_type.addItem('Домашний')
+        phone_type.addItem('Рабочий')
+        self.form_layout.addRow(phone_type, QLineEdit())
 
     def address_view(self, row=None):
         group_box = QGroupBox(self)
