@@ -7,6 +7,7 @@ from PyQt5.QtCore import QSize, Qt, QDate
 
 
 class AddressForm:
+    user_id = None
 
     def __init__(self, user=None):
         print(user)
@@ -16,6 +17,8 @@ class AddressForm:
         self.birthday = QDateEdit()
         self.notes = QTextEdit()
         self.phones = list()
+        if user is not None and user['id'] is not None:
+            self.user_id = user['id']
         if user is not None and user['second_name'] is not None:
             self.second_name.setText(user['second_name'])
         second_name_label = QLabel('Фамилия:')
@@ -23,7 +26,7 @@ class AddressForm:
             self.first_name.setText(user['first_name'])
         first_name_label = QLabel('Имя:')
         self.birthday.setCalendarPopup(True)
-        self.birthday.setDisplayFormat('dd.MM.yyyy')
+        self.birthday.setDisplayFormat('dd MMMM yyyy')
         if user is not None and user['birthday'] is not None:
             self.birthday.setDate(QDate.fromString(user['birthday'], "d.M.yyyy"))
         birthday_label = QLabel('Дата рождения:')
@@ -86,3 +89,6 @@ class AddressForm:
 
     def get_phones(self):
         return self.phones
+
+    def get_user_id(self):
+        return self.user_id

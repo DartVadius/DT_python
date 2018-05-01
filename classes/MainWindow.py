@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
         for name, action in zip(names, actions):
             button = QPushButton(name)
             button.clicked.connect(action)
-            button.setStyleSheet("width: 120px; height: 40px;")
+            button.setStyleSheet("width: 130px; height: 40px;")
             left_menu.addWidget(button)
         left_menu.addStretch()
         return left_menu
@@ -161,6 +161,7 @@ class MainWindow(QMainWindow):
 
     def save_user(self):
         print(self.form_layout.get_second_name())
+        print(self.form_layout.get_user_id())
         # for phone in self.phones:
         #     print(phone['phone'].text())
         # self.show_addresses()
@@ -199,7 +200,7 @@ class MainWindow(QMainWindow):
         user.addWidget(QLabel(row['notes']), count + 1, 2, 1, 10)
         button = QPushButton('Редактировать')
         button.clicked.connect(self.edit_address)
-        button.setStyleSheet("width: 100px; height: 20px;")
+        button.setStyleSheet("width: 110px; height: 20px;")
         button.id = row['id']
         button.table = 'addresses'
         user.addWidget(button, 0, 10, 2, 1)
