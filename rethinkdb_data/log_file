@@ -389,3 +389,39 @@
 2018-04-30T19:23:22.144261304 1.458362s info: Table e9bebaf5-cc5c-4c6d-acfd-71216ec47aff: This server is Raft leader for term 18. Latest log index is 51.
 2018-04-30T19:23:22.443909381 1.758010s info: Table 86ebe06b-adbd-4093-bdd8-f04e05598f68: Starting a new Raft election for term 18.
 2018-04-30T19:23:22.500054434 1.814155s info: Table 86ebe06b-adbd-4093-bdd8-f04e05598f68: This server is Raft leader for term 18. Latest log index is 51.
+2018-05-02T09:57:49.577651129 0.386409s notice: Running rethinkdb 2.3.6~0xenial (GCC 5.3.1)...
+2018-05-02T09:57:49.596550406 0.405312s notice: Running on Linux 4.13.0-39-generic x86_64
+2018-05-02T09:57:49.596660099 0.405417s notice: Loading data from directory /home/vad/www/DT_python/rethinkdb_data
+2018-05-02T09:57:49.713327585 0.522085s info: Automatically using cache size of 100 MB
+2018-05-02T09:57:49.714621523 0.523379s warn: Cache size does not leave much memory for server and query overhead (available memory: 215 MB).
+2018-05-02T09:57:49.714636264 0.523393s warn: Cache size is very low and may impact performance.
+2018-05-02T09:57:49.718832273 0.527590s notice: Listening for intracluster connections on port 29015
+2018-05-02T09:57:49.965231481 0.773989s notice: Listening for client driver connections on port 28015
+2018-05-02T09:57:49.966361336 0.775119s notice: Listening for administrative HTTP connections on port 8080
+2018-05-02T09:57:49.966370004 0.775127s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-05-02T09:57:49.966377130 0.775134s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-05-02T09:57:49.966405200 0.775162s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-05-02T09:57:49.966412718 0.775170s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2018-05-02T09:57:49.966423261 0.775180s notice: Server ready, "vad_VirtualBox_10n" 691f6625-1ef5-4f06-83f6-bfa27cac5694
+2018-05-02T09:57:50.941126062 1.749883s info: Table 86ebe06b-adbd-4093-bdd8-f04e05598f68: Starting a new Raft election for term 19.
+2018-05-02T09:57:50.952846864 1.761604s info: Table 86ebe06b-adbd-4093-bdd8-f04e05598f68: This server is Raft leader for term 19. Latest log index is 54.
+2018-05-02T09:57:51.643679750 2.452437s info: Table e9bebaf5-cc5c-4c6d-acfd-71216ec47aff: Starting a new Raft election for term 19.
+2018-05-02T09:57:51.647327710 2.456085s info: Table e9bebaf5-cc5c-4c6d-acfd-71216ec47aff: This server is Raft leader for term 19. Latest log index is 54.
+2018-05-03T14:08:41.008634340 0.476709s notice: Running rethinkdb 2.3.6~0xenial (GCC 5.3.1)...
+2018-05-03T14:08:41.030965800 0.499045s notice: Running on Linux 4.13.0-39-generic x86_64
+2018-05-03T14:08:41.031558482 0.499633s notice: Loading data from directory /home/vad/www/DT_python/rethinkdb_data
+2018-05-03T14:08:41.181555969 0.649630s info: Automatically using cache size of 100 MB
+2018-05-03T14:08:41.184394838 0.652469s warn: Cache size does not leave much memory for server and query overhead (available memory: 412 MB).
+2018-05-03T14:08:41.184416778 0.652491s warn: Cache size is very low and may impact performance.
+2018-05-03T14:08:41.190867807 0.658943s notice: Listening for intracluster connections on port 29015
+2018-05-03T14:08:41.424497615 0.892572s notice: Listening for client driver connections on port 28015
+2018-05-03T14:08:41.425790763 0.893865s notice: Listening for administrative HTTP connections on port 8080
+2018-05-03T14:08:41.425800033 0.893874s notice: Listening on cluster addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-05-03T14:08:41.425832668 0.893907s notice: Listening on driver addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-05-03T14:08:41.425839001 0.893913s notice: Listening on http addresses: 127.0.0.1, 127.0.1.1, ::1
+2018-05-03T14:08:41.425844989 0.893919s notice: To fully expose RethinkDB on the network, bind to all addresses by running rethinkdb with the `--bind all` command line option.
+2018-05-03T14:08:41.425867139 0.893941s notice: Server ready, "vad_VirtualBox_10n" 691f6625-1ef5-4f06-83f6-bfa27cac5694
+2018-05-03T14:08:42.729570453 2.197645s info: Table 86ebe06b-adbd-4093-bdd8-f04e05598f68: Starting a new Raft election for term 20.
+2018-05-03T14:08:42.743813940 2.211888s info: Table 86ebe06b-adbd-4093-bdd8-f04e05598f68: This server is Raft leader for term 20. Latest log index is 57.
+2018-05-03T14:08:42.854843671 2.322919s info: Table e9bebaf5-cc5c-4c6d-acfd-71216ec47aff: Starting a new Raft election for term 20.
+2018-05-03T14:08:42.868519858 2.336594s info: Table e9bebaf5-cc5c-4c6d-acfd-71216ec47aff: This server is Raft leader for term 20. Latest log index is 57.

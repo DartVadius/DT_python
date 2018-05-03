@@ -10,7 +10,6 @@ class AddressForm:
     user_id = None
 
     def __init__(self, user=None):
-        print(user)
         self.form_layout = QFormLayout()
         self.second_name = QLineEdit()
         self.first_name = QLineEdit()
@@ -82,7 +81,9 @@ class AddressForm:
         return self.first_name.text()
 
     def get_birthday(self):
-        return self.birthday
+        tmp_date = self.birthday.date()
+        tmp_date = tmp_date.toPyDate()
+        return '{0:%d.%m.%Y}'.format(tmp_date)
 
     def get_notes(self):
         return self.notes.toPlainText()
@@ -92,3 +93,7 @@ class AddressForm:
 
     def get_user_id(self):
         return self.user_id
+
+    def validate_form(self):
+        errors = list()
+        # errors.append(self.first_name.validator())

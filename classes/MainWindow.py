@@ -143,28 +143,57 @@ class MainWindow(QMainWindow):
     def button_layout(self):
         button_layout = QGridLayout()
 
-        button = QPushButton(' Телефон')
+        button = QPushButton('Телефон')
         button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_ArrowUp')))
         button.clicked.connect(self.add_field)
         button.setStyleSheet("width: 90px; height: 20px;")
 
         button_layout.addWidget(button, 1, 0, 1, 1)
 
-        button = QPushButton(' Сохранить')
+        button = QPushButton('Сохранить')
         button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')))
         button.clicked.connect(self.save_user)
         button.setStyleSheet("width: 90px; height: 20px;")
 
         button_layout.addWidget(button, 1, 1, 1, 1)
-        button_layout.addWidget(QLabel(), 1, 2, 1, 10)
+
+        if self.form_layout.get_user_id() is not None:
+            button = QPushButton('Удалить')
+            button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton')))
+            button.clicked.connect(self.remove_user)
+            button.setStyleSheet("width: 90px; height: 20px;")
+
+            button_layout.addWidget(button, 1, 2, 1, 1)
+
+        button_layout.addWidget(QLabel(), 1, 3, 1, 10)
         return button_layout
 
     def save_user(self):
-        print(self.form_layout.get_second_name())
-        print(self.form_layout.get_user_id())
-        # for phone in self.phones:
-        #     print(phone['phone'].text())
-        # self.show_addresses()
+        user = self.connector.get_by_id('addresses', self.form_layout.get_user_id())
+        user['first_name'] = self.form_layout.get_first_name()
+        user['second_name'] = self.form_layout.get_second_name()
+        user['notes'] = self.form_layout.get_notes()
+        user['birthday'] = self.form_layout.get_birthday()
+        user['phone'] = list()
+        for phone in self.form_layout.get_phones():
+            if phone['phone'].text() != '':
+                if phone['type'].currentIndex() == 0:
+                    phone_type = 'home'
+                else:
+                    phone_type = 'work'
+                user['phone'].append({
+                    'phone': phone['phone'].text(),
+                    'type': phone_type
+                })
+        if 'id' not in user or user['id'] is None:
+            self.connector.add_row('addresses', user)
+        else:
+            self.connector.update_by_id('addresses', user['id'], user)
+        self.show_addresses()
+
+    def remove_user(self):
+        self.connector.delete_by_id('addresses', self.form_layout.get_user_id())
+        self.show_addresses()
 
     def add_field(self):
         phone_type = QComboBox(self)
