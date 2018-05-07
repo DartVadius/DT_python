@@ -7,6 +7,7 @@ from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from connector import Connector
 from classes.AddressForm import AddressForm
+from classes.NotesForm import NotesForm
 
 
 def clear_layout(layout):
@@ -77,8 +78,8 @@ class MainWindow(QMainWindow):
         actions = [
             self.show_addresses,
             self.add_address,
-            self.show_test,
-            self.show_test,
+            self.show_notes,
+            self.add_notes,
             self.show_test,
         ]
         for name, action in zip(names, actions):
@@ -107,6 +108,23 @@ class MainWindow(QMainWindow):
         self.main_field.addWidget(self.main_widget)
 
     @action_decorator
+    def show_notes(self):
+        notes = self.connector.get_all('notes')
+        self.main_widget = QScrollArea()
+        self.main_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.main_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        widget = QWidget()
+        layout = QVBoxLayout()
+        for row in notes:
+            view = self.note_view(row)
+            layout.addWidget(view)
+        layout.addStretch()
+        widget.setLayout(layout)
+        self.main_widget.setWidget(widget)
+        self.main_widget.setWidgetResizable(False)
+        self.main_field.addWidget(self.main_widget)
+
+    @action_decorator
     def show_test(self):
         addresses = self.connector.get_all('addresses')
         for row in addresses:
@@ -126,6 +144,19 @@ class MainWindow(QMainWindow):
         self.main_field.addWidget(group_box)
 
     @action_decorator
+    def add_notes(self):
+        self.main_widget = QGroupBox()
+        self.form_layout = NotesForm()
+        self.main_widget.setLayout(self.form_layout.get_layout())
+        self.main_field.addWidget(self.main_widget)
+        self.main_field.addStretch()
+        button_layout = self.button_layout_notes()
+        group_box = QGroupBox(self)
+        group_box.setLayout(button_layout)
+
+        self.main_field.addWidget(group_box)
+
+    @action_decorator
     def edit_address(self):
         source = self.sender()
         user = self.connector.get_by_id(source.table, source.id)
@@ -139,6 +170,31 @@ class MainWindow(QMainWindow):
         group_box.setLayout(button_layout)
 
         self.main_field.addWidget(group_box)
+
+    @action_decorator
+    def edit_note(self):
+        pass
+
+    def button_layout_notes(self):
+        button_layout = QGridLayout()
+
+        button = QPushButton('Сохранить')
+        button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogSaveButton')))
+        button.clicked.connect(self.save_note)
+        button.setStyleSheet("width: 90px; height: 20px;")
+
+        button_layout.addWidget(button, 1, 1, 1, 1)
+
+        if self.form_layout.get_note_id() is not None:
+            button = QPushButton('Удалить')
+            button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton')))
+            button.clicked.connect(self.remove_note())
+            button.setStyleSheet("width: 90px; height: 20px;")
+
+            button_layout.addWidget(button, 1, 2, 1, 1)
+
+        button_layout.addWidget(QLabel(), 1, 3, 1, 10)
+        return button_layout
 
     def button_layout(self):
         button_layout = QGridLayout()
@@ -168,6 +224,9 @@ class MainWindow(QMainWindow):
         button_layout.addWidget(QLabel(), 1, 3, 1, 10)
         return button_layout
 
+    def save_note(self):
+        pass
+
     def save_user(self):
         user = self.connector.get_by_id('addresses', self.form_layout.get_user_id())
         user['first_name'] = self.form_layout.get_first_name()
@@ -195,6 +254,9 @@ class MainWindow(QMainWindow):
         self.connector.delete_by_id('addresses', self.form_layout.get_user_id())
         self.show_addresses()
 
+    def remove_note(self):
+        pass
+
     def add_field(self):
         phone_type = QComboBox(self)
         phone_type.addItem('Домашний')
@@ -205,6 +267,22 @@ class MainWindow(QMainWindow):
             'type': phone_type
         })
         self.form_layout.add_row(phone_type, phone)
+
+    def note_view(self, row=None):
+        group_box = QGroupBox(self)
+        note = QGridLayout()
+        note.addWidget(QLabel('Дата: '), 0, 1)
+        note.addWidget(QLabel(row['date']), 0, 2)
+        note.addWidget(QLabel('Примечание: '), 1, 1)
+        note.addWidget(QLabel(row['notes']), 1, 2, 1, 10)
+        button = QPushButton('Редактировать')
+        button.clicked.connect(self.edit_note)
+        button.setStyleSheet("width: 110px; height: 20px;")
+        button.id = row['id']
+        button.table = 'notes'
+        note.addWidget(button, 0, 10, 2, 1)
+        group_box.setLayout(note)
+        return group_box
 
     def address_view(self, row=None):
         group_box = QGroupBox(self)
