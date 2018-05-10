@@ -21,10 +21,11 @@ class NotesForm:
         self.date.setDisplayFormat('dd MMMM yyyy')
         if note is not None and note['date'] is not None:
             self.date.setDate(QDate.fromString(note['date'], "d.M.yyyy"))
-        date_label = QLabel('Дата:')
-        notes_label = QLabel('Примечание:')
         if note is not None and note['notes'] is not None:
             self.notes.setText(note['notes'])
+
+        date_label = QLabel('Дата:')
+        notes_label = QLabel('Примечание:')
 
         self.form_layout.addRow(date_label, self.date)
         self.form_layout.addRow(notes_label, self.notes)

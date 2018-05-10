@@ -2,7 +2,7 @@
 
 from PyQt5.QtWidgets import QMainWindow, QLabel, QGridLayout, QWidget, qApp, QAction, QSystemTrayIcon, QStyle, QMenu, \
     QDialog, QMessageBox, QDesktopWidget, QToolTip, QPushButton, QTextEdit, QBoxLayout, QVBoxLayout, QHBoxLayout, \
-    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea, QComboBox, QCalendarWidget, QDateEdit
+    QFrame, QLineEdit, QFormLayout, QGroupBox, QScrollArea, QComboBox, QCalendarWidget, QDateEdit, QSizePolicy
 from PyQt5.QtCore import QSize, Qt, QDate
 from PyQt5.QtGui import QIcon, QPixmap, QFont
 from connector import Connector
@@ -117,9 +117,11 @@ class MainWindow(QMainWindow):
         layout = QVBoxLayout()
         for row in notes:
             view = self.note_view(row)
+            view.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             layout.addWidget(view)
         layout.addStretch()
         widget.setLayout(layout)
+        # widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.main_widget.setWidget(widget)
         self.main_widget.setWidgetResizable(False)
         self.main_field.addWidget(self.main_widget)
@@ -173,7 +175,18 @@ class MainWindow(QMainWindow):
 
     @action_decorator
     def edit_note(self):
-        pass
+        source = self.sender()
+        note = self.connector.get_by_id(source.table, source.id)
+        self.main_widget = QGroupBox()
+        self.form_layout = NotesForm(note)
+        self.main_widget.setLayout(self.form_layout.get_layout())
+        self.main_field.addWidget(self.main_widget)
+        self.main_field.addStretch()
+        button_layout = self.button_layout_notes()
+        group_box = QGroupBox(self)
+        group_box.setLayout(button_layout)
+
+        self.main_field.addWidget(group_box)
 
     def button_layout_notes(self):
         button_layout = QGridLayout()
@@ -188,7 +201,7 @@ class MainWindow(QMainWindow):
         if self.form_layout.get_note_id() is not None:
             button = QPushButton('Удалить')
             button.setIcon(self.style().standardIcon(getattr(QStyle, 'SP_DialogCancelButton')))
-            button.clicked.connect(self.remove_note())
+            button.clicked.connect(self.remove_note)
             button.setStyleSheet("width: 90px; height: 20px;")
 
             button_layout.addWidget(button, 1, 2, 1, 1)
@@ -225,7 +238,14 @@ class MainWindow(QMainWindow):
         return button_layout
 
     def save_note(self):
-        pass
+        note = self.connector.get_by_id('notes', self.form_layout.get_note_id())
+        note['notes'] = self.form_layout.get_notes()
+        note['date'] = self.form_layout.get_date()
+        if 'id' not in note or note['id'] is None:
+            self.connector.add_row('notes', note)
+        else:
+            self.connector.update_by_id('notes', note['id'], note)
+        self.show_notes()
 
     def save_user(self):
         user = self.connector.get_by_id('addresses', self.form_layout.get_user_id())
@@ -255,7 +275,8 @@ class MainWindow(QMainWindow):
         self.show_addresses()
 
     def remove_note(self):
-        pass
+        self.connector.delete_by_id('notes', self.form_layout.get_note_id())
+        self.show_notes()
 
     def add_field(self):
         phone_type = QComboBox(self)
@@ -270,17 +291,20 @@ class MainWindow(QMainWindow):
 
     def note_view(self, row=None):
         group_box = QGroupBox(self)
+        # group_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         note = QGridLayout()
         note.addWidget(QLabel('Дата: '), 0, 1)
         note.addWidget(QLabel(row['date']), 0, 2)
         note.addWidget(QLabel('Примечание: '), 1, 1)
-        note.addWidget(QLabel(row['notes']), 1, 2, 1, 10)
+        n = QLabel(row['notes'])
+        n.setWordWrap(True)
+        note.addWidget(n, 1, 2, 1, 10)
         button = QPushButton('Редактировать')
         button.clicked.connect(self.edit_note)
         button.setStyleSheet("width: 110px; height: 20px;")
         button.id = row['id']
         button.table = 'notes'
-        note.addWidget(button, 0, 10, 2, 1)
+        note.addWidget(button, 0, 10, 1, 1)
         group_box.setLayout(note)
         return group_box
 
@@ -304,7 +328,9 @@ class MainWindow(QMainWindow):
                 user.addWidget(QLabel(number['type']), count, 4)
                 count += 1
         user.addWidget(QLabel('Примечание: '), count + 1, 1)
-        user.addWidget(QLabel(row['notes']), count + 1, 2, 1, 10)
+        n = QLabel(row['notes'])
+        n.setWordWrap(True)
+        user.addWidget(n, count + 1, 2, 1, 10)
         button = QPushButton('Редактировать')
         button.clicked.connect(self.edit_address)
         button.setStyleSheet("width: 110px; height: 20px;")
